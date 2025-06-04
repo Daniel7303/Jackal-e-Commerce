@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6 bg-white rounded shadow mt-10">
+  <h2 class="text-xl font-bold mb-4">Your Cart</h2>
+  {% if items %}
+    <ul>
+      {% for entry in items %}
+        <li class="mb-4 border-b pb-2">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="text-lg font-semibold">{{ entry.product.title }}</h3>
+              <p>Size {{ entry.sizes}}</p>
+              <p>Qty: {{ entry.quantity }}</p>
+              <p>Subtotal: ${{ entry.subtotal }}</p>
+            </div>
+            <a href="{% url 'market:remove_from_cart' entry.product.id %}"
+              class="text-red-500 hover:underline">Remove</a>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+    <div class="text-right font-bold mt-4">
+      Total: ${{ total }}
+    </div>
+  {% else %}
+    <p>Your cart is empty.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

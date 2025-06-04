@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+
+<!-- Tab Filters -->
+<div class="mt-16 text-center">
+  <div class="category-links flex gap-4">
+  <a href="{% url 'market:listings' %}" class="hover:text-black transition {% if not selected_category %}font-bold underline{% endif %}">All</a>
+<a href="{% url 'market:category_filter' 'Men' %}" class="hover:text-black transition {% if selected_category == 'Men' %}font-bold underline{% endif %}">Mens</a>
+<a href="{% url 'market:category_filter' 'Women' %}" class="hover:text-black transition {% if selected_category == 'Women' %}font-bold underline{% endif %}">Womens</a>
+
+</div>
+</div>
+
+
+<div class="mb-4 mt-4">
+    <form method="get" class="flex items-center">
+        <input type="text" name="query" placeholder="Search products..." class="w-full px-4 py-2 rounded-l-md border border-gray-300">
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-r-md">Search</button>
+    </form>
+</div>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="bg-green-100 text-green-800 p-2 rounded mb-4">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+
+<!-- Product Grid Section -->
+<section class="max-w-7xl mx-auto px-4 py-14">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+    {% for item in lists %}
+    <div class="bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg transition duration-300 overflow-hidden">
+      <!-- Product Image -->
+      <img src="{{ item.image.url }}" alt="{{ item.title }}"
+           class="w-full h-56 object-cover" />
+
+      <!-- Product Info -->
+      <div class="p-4">
+        <h3 class="text-lg font-semibold text-gray-900 truncate">{{ item.title }}</h3>
+        <p class="text-sm text-green-600 font-medium mt-1">${{ item.price }}</p>
+
+        <!-- Actions -->
+        <div class="mt-4 flex flex-col gap-2">
+          {% comment %} <form method="post" action="">
+            {% csrf_token %}
+            <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded transition">
+              Add to Cart
+            </button>
+          </form> {% endcomment %}
+
+          <a href="{% url "market:item_details" slug=item.slug %}"
+             class="w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-2 rounded transition">
+            See Description
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+
+
+ {% comment %} <!-- Pagination -->
+<div class="flex justify-between items-center mt-8">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="text-blue-600 hover:underline">← Previous</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="text-blue-600 hover:underline">Next →</a>
+    {% endif %}
+</div> {% endcomment %}
+
+{% endblock %}

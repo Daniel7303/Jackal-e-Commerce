@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+
+{% block content  %}
+
+<div class="max-w-md mx-auto mt-10 bg-white p-6 rounded-xl shadow">
+  <h1 class="text-2xl font-bold mb-6">Register</h1>
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+
+    <!-- Render form errors -->
+    {% if form.errors %}
+      <div class="text-red-500 text-sm">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <!-- Username -->
+    <div>
+      {{ form.username.label_tag }}
+      {{ form.username }}
+      {{ form.username.errors }}
+    </div>
+
+    <!-- Password1 -->
+    <div>
+      {{ form.password1.label_tag }}
+      {{ form.password1 }}
+      {{ form.password1.errors }}
+    </div>
+
+    <!-- Password2 -->
+    <div>
+      {{ form.password2.label_tag }}
+      {{ form.password2 }}
+      {{ form.password2.errors }}
+    </div>
+
+    <!-- Submit button -->
+    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Register</button>
+  </form>
+
+  <p class="">Already have an account >><a href="{% url "account:login" %}">Login</a></p>
+</div>
+
+
+
+{% endblock  %}
