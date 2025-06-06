@@ -3,14 +3,62 @@
 {% block content %}
 
 
-<!-- Tab Filters -->
+<!-- Tab Filter -->
 <div class="mt-16 text-center">
-  <div class="category-links flex gap-4">
-  <a href="{% url 'market:listings' %}" class="hover:text-black transition {% if not selected_category %}font-bold underline{% endif %}">All</a>
-<a href="{% url 'market:category_filter' 'Men' %}" class="hover:text-black transition {% if selected_category == 'Men' %}font-bold underline{% endif %}">Mens</a>
-<a href="{% url 'market:category_filter' 'Women' %}" class="hover:text-black transition {% if selected_category == 'Women' %}font-bold underline{% endif %}">Womens</a>
+  <div class="relative inline-block text-left">
+  <button type="button" id="filterButton" aria-expanded="false" aria-haspopup="true"
+    class="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+    <!-- Filter icon -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L15 13.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 019 17v-3.586L3.293 6.707A1 1 0 013 6V4z" />
+    </svg>
+    <span class="text-gray-700 font-medium">Filter</span>
+  </button>
 
+  <!-- Dropdown menu -->
+  <div id="filterDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+    <form method="get" action="{{ request.path}}" class="p-4 space-y-4">
+      
+      <!-- Categories -->
+      <fieldset>
+        <legend class="text-gray-900 font-semibold mb-2">Category</legend>
+        <label class="flex items-center gap-2">
+  <input type="checkbox" name="category" value="Men" class="form-checkbox"
+         {% if 'Men' in selected_categories %}checked{% endif %}>
+  <span>Men</span>
+</label>
+
+<label class="flex items-center gap-2">
+  <input action="" type="checkbox" name="category" value="Women" class="form-checkbox"
+         {% if 'Women' in selected_categories %}checked{% endif %}>
+  <span>Women</span>
+</label>
+      </fieldset>
+      
+      <!-- Sizes -->
+      <fieldset>
+        <legend class="text-gray-900 font-semibold mb-2">Size</legend>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" name="size" value="S" class="form-checkbox" {% if 'S' in selected_sizes %}checked{% endif %}>
+          <span>S</span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" name="size" value="M" class="form-checkbox" {% if 'M' in selected_sizes %}checked{% endif %}>
+          <span>M</span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" name="size" value="L" class="form-checkbox" {% if 'L' in selected_sizes %}checked{% endif %}>
+          <span>L</span>
+        </label>
+      </fieldset>
+
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+        Apply Filters
+      </button>
+    </form>
+  </div>
 </div>
+
 </div>
 
 
@@ -46,14 +94,7 @@
 
         <!-- Actions -->
         <div class="mt-4 flex flex-col gap-2">
-          {% comment %} <form method="post" action="">
-            {% csrf_token %}
-            <button type="submit"
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded transition">
-              Add to Cart
-            </button>
-          </form> {% endcomment %}
-
+  
           <a href="{% url "market:item_details" slug=item.slug %}"
              class="w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-2 rounded transition">
             See Description

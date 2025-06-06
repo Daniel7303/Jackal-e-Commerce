@@ -1,94 +1,205 @@
-
 <!DOCTYPE html>
 {% load static %}
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Marketplace Home</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-white text-gray-800">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marketplace Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-white text-gray-800">
+    <!-- Navbar -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center py-4">
+          <!-- Logo -->
+          <a
+            href="{% url 'core:home' %}"
+            class="text-2xl font-bold text-gray-800"
+            >Jackal</a
+          >
 
-  <!-- Navbar -->
-<header class="bg-white shadow-sm sticky top-0 z-50">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between items-center py-4">
-      
-      <!-- Logo / Brand -->
-      <a href="{% url "core:home" %}"><h1 class="text-2xl font-bold text-gray-800 tracking-tight">Jackal</h1></a>
-      
-      <!-- Navigation -->
-      <nav class="hidden md:flex space-x-6 text-sm text-gray-700">
-        <a href="{% url 'market:category_filter' 'Men' %}" class="{% if selected_category == 'Men' %}font-bold underline{% endif %}">Mens</a>
-  <a href="{% url 'market:category_filter' 'Women' %}" class="{% if selected_category == 'Women' %}font-bold underline{% endif %}">Womens</a>
-        <a href="#" class="hover:text-black transition">Objects</a>
-        {% comment %} <a href="#" class="hover:text-black transition">Journal</a> {% endcomment %}
-        {% if user.is_superuser %}
-        <a href="{% url 'market:create_listings' %}" class="text-blue-600 hover:underline">Add Product</a>
-        {% endif %}
-      </nav>
-      
-      <!-- User Actions -->
-      <div class="flex items-center space-x-4 text-sm">
-        <a href="{% url 'market:view_wishlist' %}" class="hover:text-black transition relative">
-  Wishlist
-  {% if wishlist_count %}
-    <span class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-2">
-      {{ wishlist_count }}
-    </span>
-  {% endif %}
-</a>
-
-        {% comment %} <a href="#" class="hover:text-black transition">Contact</a> {% endcomment %}
-
-        {% if user.is_authenticated %}
-          <a href="{% url 'market:cart_view' %}" class="relative">
-  🛒
-  <span class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-2">
-    {{ request.session.cart|length }}
-  </span>
-</a>
-
-          <form action="{% url 'account:logout' %}" method="post" class="inline">
-            {% csrf_token %}
-            <button type="submit" class="text-red-500 hover:text-red-700 transition">Logout</button>
+          <!-- Search Bar -->
+          <form s method="get" class="flex-1 mx-6 max-w-2xl">
+            <label class="relative w-full block">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg
+                  class="h-5 w-5 text-gray-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.5 10.5a7.5 7.5 0 0013.15 6.15z"
+                  />
+                </svg>
+              </span>
+              <input
+                type="text"
+                name="q"
+                class="block w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                placeholder="Search products..."
+              />
+            </label>
           </form>
-        {% else %}
-          <a href="{% url 'account:register' %}" class="text-blue-600 hover:underline">Register/Login</a>
-        {% endif %}
+
+          <!-- Icons -->
+          <div class="flex items-center space-x-4">
+            <!-- Wishlist -->
+            <a href="{% url 'market:view_wishlist' %}" class="relative">
+              <svg
+                class="w-6 h-6 text-gray-700"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42
+                     4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3
+                     16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55
+                     11.54L12 21.35z"
+                />
+              </svg>
+              {% if wishlist_count %}
+              <span
+                class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1.5"
+              >
+                {{ wishlist_count }}
+              </span>
+              {% endif %}
+            </a>
+
+            <!-- Cart -->
+            <a href="{% url 'market:cart_view' %}" class="relative">
+              <svg
+                class="w-6 h-6 text-gray-700"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.2 6M17 13l1.2 6M6 19a2 2 0 100 4 2 2 0 000-4zm12 0a2 2 0 100 4 2 2 0 000-4z"
+                />
+              </svg>
+              {% if cart_count %}
+              <span
+                class="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full px-1.5"
+              >
+                {{ cart_count }}
+              </span>
+              {% endif %}
+            </a>
+
+            <!-- Profile Dropdown -->
+            <div class="relative" x-data="{ open: false }">
+              <button @click="open = !open" class="focus:outline-none">
+                <svg
+                  class="w-6 h-6 text-gray-700"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M5.121 17.804A4 4 0 0112 15a4 4 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </button>
+
+              <div
+                x-show="open"
+                @click.away="open = false"
+                class="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg py-1 z-50"
+              >
+                {% if user.is_authenticated %}
+                <a
+                  href=""
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >Dashboard</a
+                >
+                {% if user.is_superuser %}
+                <a
+                  href="{% url 'market:create_listings' %}"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >Add Product</a
+                >
+                {% endif %}
+                <form action="{% url 'account:logout' %}" method="post">
+                  {% csrf_token %}
+                  <button
+                    type="submit"
+                    class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </form>
+                {% else %}
+                <a
+                  href="{% url 'account:register' %}"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >Register/Login</a
+                >
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</header>
+    </header>
 
-
-  <!-- Main Content -->
+    <!-- Main Content -->
     <main class="flex-grow max-w-7xl mx-auto px-4 py-8">
-  
-        {% block content %}
-        {% comment %} {% if messages %}
-  <div class="space-y-2">
-    {% for message in messages %}
-      <div class="p-3 rounded text-white
-                  {% if message.tags == 'success' %}bg-green-500
-                  {% elif message.tags == 'error' %}bg-red-500
-                  {% else %}bg-blue-500{% endif %}">
-        {{ message }}
+      {% block content %} {% comment %} {% if messages %}
+      <div class="space-y-2">
+        {% for message in messages %}
+        <div
+          class="p-3 rounded text-white {% if message.tags == 'success' %}bg-green-500 {% elif message.tags == 'error' %}bg-red-500 {% else %}bg-blue-500{% endif %}"
+        >
+          {{ message }}
+        </div>
+        {% endfor %}
       </div>
-    {% endfor %}
-  </div>
-{% endif %} {% endcomment %}
+      {% endif %} {% endcomment %}
 
-        <!-- Page specific content goes here -->
-        {% endblock %}
+      <!-- Page specific content goes here -->
+      {% endblock %}
     </main>
 
+    <!-- Footer -->
+    <footer class="text-center py-10 text-sm text-gray-500">
+      &copy; 2025 Marketplace. All rights reserved.
+    </footer>
 
-  <!-- Footer -->
-  <footer class="text-center py-10 text-sm text-gray-500">
-    &copy; 2025 Marketplace. All rights reserved.
-  </footer>
+    {% comment %}
+    <script>
+      const filterButton = document.getElementById("filterButton");
+      const filterDropdown = document.getElementById("filterDropdown");
 
-</body>
+      filterButton.addEventListener("click", () => {
+        filterDropdown.classList.toggle("hidden");
+      });
+
+      // Optional: close dropdown when clicking outside
+      document.addEventListener("click", (e) => {
+        if (
+          !filterButton.contains(e.target) &&
+          !filterDropdown.contains(e.target)
+        ) {
+          filterDropdown.classList.add("hidden");
+        }
+      });
+    </script>
+    {% endcomment %}
+    <!-- Alpine.js for dropdown -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+      defer
+    ></script>
+  </body>
 </html>

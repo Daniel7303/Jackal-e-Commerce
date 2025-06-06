@@ -9,18 +9,23 @@ from django.core.paginator import Paginator
 
 
 def home(request, category=None):
-    
-    
     lists = Product.objects.all()
     paginator = Paginator(lists, 2)
-    
-    
-    wishlisted_ids = []
 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    wishlisted_ids = []
     if request.user.is_authenticated:
         wishlisted_ids = Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
+        
+    
 
-    return render(request, 'core/home.html', {'lists': lists, 'wishlisted_ids': wishlisted_ids})
+    return render(request, 'core/home.html', {
+        'page_obj': page_obj,
+        'wishlisted_ids': wishlisted_ids,
+        'lists': lists,
+    })
     
     
     

@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect
-from . models import Product, Wishlist
+from . models import Product, Wishlist, Cart, CartItem
 from .forms import ListingForm
 from .forms import ProductFilterForm
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 
-from .cart import add_to_cart, get_cart_items, remove_from_cart
+# from .cart import add_to_cart, get_cart_items, remove_from_cart
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib import messages
@@ -31,13 +31,33 @@ def add_listing(request):
     return render(request, 'markets/create_listings.html', {'form':form})
 
 
-# views.py
+
 def list_page(request, category=None):
+    categories = request.GET.getlist('category')
+    sizes = request.GET.getlist('size')
+
+    products = Product.objects.all()
+
     if category:
-        lists = Product.objects.filter(category=category)
-    else:
-        lists = Product.objects.all()
-    return render(request, 'core/items.html', {'lists': lists, 'selected_category': category})
+        products = products.filter(category=category)
+
+    if categories:
+        products = products.filter(category__in=categories)
+
+    if sizes:
+        products = products.filter(sizes__name__in=sizes).distinct()
+
+    context = {
+        'lists': products,
+        'selected_categories': categories,
+        'selected_sizes': sizes,
+        'selected_category': category,
+    }
+    return render(request, 'core/items.html', context)
+
+
+
+
 
     
 
@@ -57,9 +77,25 @@ def item_details(request, slug):
 def add_to_cart_view(request, product_id):
     if request.method == "POST":
         item = Product.objects.get(id=product_id)
+            
         if request.user.is_authenticated:
+            if item.stock == 0:
+                messages.error(request, "This item is currently out of stock.")
+                return redirect('market:item_details', slug=product_id.slug)
+            
             quantity = int(request.POST.get("quantity", 1))
-            add_to_cart(request, product_id, quantity)
+            
+            if quantity > item.stock:
+                messages.error(request, f"Only {item.stock} item(s) left in stock.")
+                return redirect('market:item_details', slug=product_id.slug)
+            
+            cart, _ = Cart.objects.get_or_create(user=request.user)
+            cart_item, created = CartItem.objects.get_or_create(cart=cart, product=item)
+            if not created:
+                cart_item.quantity += quantity
+            else:
+                cart_item.quantity = quantity
+            cart_item.save()
             messages.success(request, "Item added to cart successfully!")
         
             
@@ -70,12 +106,17 @@ def add_to_cart_view(request, product_id):
     
 
 def cart_view(request):
-    items, total = get_cart_items(request)
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    items = cart.items.select_related('product')
+    total = sum(item.product.price * item.quantity for item in items)
     return render(request, 'markets/cart.html', {'items': items, 'total': total})
 
+
 def remove_from_cart_view(request, product_id):
-    remove_from_cart(request, product_id)
+    cart = Cart.objects.get(user=request.user)
+    CartItem.objects.filter(cart=cart, product_id=product_id).delete()
     return redirect('market:cart_view')
+
 
 
 
