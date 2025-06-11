@@ -2,24 +2,46 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="relative">
-  <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1920&q=80"
-       alt="Essential Tees"
-       class="w-full h-[500px] object-cover rounded-b-xl shadow-lg" />
+<section class="relative overflow-hidden h-[500px] rounded-b-xl shadow-lg">
+  <div class="slider w-full h-full relative">
+    <!-- Slide 1 -->
+    <div class="slide absolute inset-0 transition-opacity duration-1000 opacity-100">
+      <img src="media\ChatGPT Image Jun 7, 2025, 08_51_36 PM.png"
+           alt="Essential Tees"
+           class="w-full h-[500px] object-cover" />
+      <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white text-center px-4">
+        <div>
+          <h2 class="text-4xl font-bold mb-2">New Essential Tees</h2>
+          <p class="text-lg mb-4">Timeless pieces for every wardrobe</p>
+          {% if user.is_authenticated %}
+          <p></p>
+          {% else %}
+          <a href="{% url 'account:register' %}" class="inline-block bg-white text-black font-medium px-6 py-2 rounded hover:bg-gray-100 transition">
+            Shop Now →
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
 
-  <!-- Overlay Text -->
-  <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white text-center px-4">
-    <div>
-      <h2 class="text-4xl font-bold mb-2">New Essential Tees</h2>
-      <p class="text-lg mb-4">Timeless pieces for every wardrobe</p>
-
-      {% if user.is_authenticated %}
-      <p></p>
-      {% else %}
-      <a href="{% url 'account:register' %}" class="inline-block bg-white text-black font-medium px-6 py-2 rounded hover:bg-gray-100 transition">
-        Shop Now →
-      </a>
-      {% endif %}
+    <!-- Slide 2 -->
+    <div class="slide absolute inset-0 transition-opacity duration-1000 opacity-0">
+      <img src="media\ChatGPT Image Jun 7, 2025, 09_50_25 PM.png"
+           alt="Find Your Perfect Jacket"
+           class="w-full h-[500px] object-cover" />
+      <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white text-center px-4">
+        <div>
+          <h2 class="text-4xl font-bold mb-2">Find Your Perfect Jacket</h2>
+          <p class="text-lg mb-4">Stylish warmth for everyone</p>
+          {% if user.is_authenticated %}
+          <p></p>
+          {% else %}
+          <a href="{% url 'account:register' %}" class="inline-block bg-white text-black font-medium px-6 py-2 rounded hover:bg-gray-100 transition">
+            Shop Now →
+          </a>
+          {% endif %}
+        </div>
+      </div>
     </div>
   </div>
 </section>

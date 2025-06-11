@@ -25,6 +25,7 @@ def home(request, category=None):
         'page_obj': page_obj,
         'wishlisted_ids': wishlisted_ids,
         'lists': lists,
+        'show_search': False
     })
     
     

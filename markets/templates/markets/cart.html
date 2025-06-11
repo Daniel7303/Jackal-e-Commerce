@@ -1,31 +1,68 @@
-{% extends "layout.html" %}
+{% extends "layout.html" %} {% block content %}
+<div class="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg mt-10">
+  <h2 class="text-2xl font-bold mb-6 text-gray-800">Your Cart</h2>
 
-{% block content %}
-<div class="max-w-4xl mx-auto p-6 bg-white rounded shadow mt-10">
-  <h2 class="text-xl font-bold mb-4">Your Cart</h2>
   {% if items %}
-    <ul>
-      {% for entry in items %}
-        <li class="mb-4 border-b pb-2">
-          <div class="flex justify-between items-center">
-            <div>
-              <h3 class="text-lg font-semibold">{{ entry.product.title }}</h3>
-              <p>Size {{ entry.sizes}}</p>
-              <p>Qty: {{ entry.quantity }}</p>
-              <p>Subtotal: ${{ entry.subtotal }}</p>
-            </div>
-            <a href="{% url 'market:remove_from_cart' entry.product.id %}"
-              class="text-red-500 hover:underline">Remove</a>
-          </div>
-        </li>
-      {% endfor %}
-    </ul>
-    <div class="text-right font-bold mt-4">
-      Total: ${{ total }}
+  <ul class="space-y-6">
+    {% for entry in items %}
+    <li
+      class="flex flex-col md:flex-row items-center justify-between border-b pb-4 gap-4"
+    >
+      <div class="w-full md:w-1/4">
+        <img
+          src="{{ entry.product.image.url }}"
+          alt="{{ entry.product.title }}"
+          class="w-full h-40 object-cover rounded-lg shadow-sm"
+        />
+      </div>
+
+      <div class="w-full md:w-2/4 space-y-1 text-gray-700">
+        <h3 class="text-lg font-semibold">{{ entry.product.title }}</h3>
+        <p class="text-sm">
+          Size:
+          <span class="font-medium">{{ entry.sizes }}</span>
+        </p>
+        <p class="text-sm">
+          Quantity:
+          <span class="font-medium">{{ entry.quantity }}</span>
+        </p>
+        <p class="text-sm">
+          Subtotal:
+          <span class="font-semibold">
+            ${{ entry.subtotal|floatformat:2 }}</span
+          >
+        </p>
+      </div>
+
+      <div class="w-full md:w-1/4 flex justify-end md:justify-center">
+        <a
+          href="{% url 'market:remove_from_cart' entry.product.id %}"
+          class="inline-block text-red-600 hover:text-red-800 text-sm font-medium underline underline-offset-2 transition"
+        >
+          Remove
+        </a>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+
+  <div
+    class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4"
+  >
+    <div class="text-lg font-bold text-gray-800">
+      Total: ${{ total|floatformat:2 }}
     </div>
+
+    <a
+      href="{% url 'market:order_summary' %}"
+      class="inline-block bg-black text-white px-6 py-2 rounded hover:bg-gray-900 transition duration-200"
+    >
+      Review Order →
+    </a>
+  </div>
+
   {% else %}
-    <p>Your cart is empty.</p>
+  <p class="text-gray-500">Your cart is empty.</p>
   {% endif %}
 </div>
-
 {% endblock %}

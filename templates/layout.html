@@ -20,6 +20,7 @@
           >
 
           <!-- Search Bar -->
+          {% if show_search %}
           <form s method="get" class="flex-1 mx-6 max-w-2xl">
             <label class="relative w-full block">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -46,7 +47,7 @@
               />
             </label>
           </form>
-
+          {% endif %}
           <!-- Icons -->
           <div class="flex items-center space-x-4">
             <!-- Wishlist -->
@@ -155,17 +156,7 @@
 
     <!-- Main Content -->
     <main class="flex-grow max-w-7xl mx-auto px-4 py-8">
-      {% block content %} {% comment %} {% if messages %}
-      <div class="space-y-2">
-        {% for message in messages %}
-        <div
-          class="p-3 rounded text-white {% if message.tags == 'success' %}bg-green-500 {% elif message.tags == 'error' %}bg-red-500 {% else %}bg-blue-500{% endif %}"
-        >
-          {{ message }}
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %} {% endcomment %}
+      {% block content %}
 
       <!-- Page specific content goes here -->
       {% endblock %}
@@ -201,5 +192,21 @@
       src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
       defer
     ></script>
+
+    <script>
+      // Wait until DOM content is fully loaded to avoid querySelectorAll returning empty
+      document.addEventListener("DOMContentLoaded", () => {
+        const slides = document.querySelectorAll(".slide");
+        let index = 0;
+
+        setInterval(() => {
+          slides[index].classList.remove("opacity-100");
+          slides[index].classList.add("opacity-0");
+          index = (index + 1) % slides.length;
+          slides[index].classList.remove("opacity-0");
+          slides[index].classList.add("opacity-100");
+        }, 5000);
+      });
+    </script>
   </body>
 </html>

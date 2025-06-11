@@ -9,6 +9,8 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib import messages
+from .models import Order, OrderItem
+from decimal import Decimal
 
 
 
@@ -53,18 +55,9 @@ def list_page(request, category=None):
         'selected_sizes': sizes,
         'selected_category': category,
     }
-    return render(request, 'core/items.html', context)
+    return render(request, 'core/items.html', context, {'show_search': True})
 
 
-
-
-
-    
-
-# def posts_by_category(request, category):
-#     filtered_posts = Post.objects.filter(category=category)
-#     categories = Post.objects.values_list('category', flat=True).distinct()
-#     return render(request, 'main/category.html', {'posts': filtered_posts, 'categories': categories})
 
 
 def item_details(request, slug):
@@ -81,13 +74,13 @@ def add_to_cart_view(request, product_id):
         if request.user.is_authenticated:
             if item.stock == 0:
                 messages.error(request, "This item is currently out of stock.")
-                return redirect('market:item_details', slug=product_id.slug)
+                return redirect('market:item_details', slug=item.slug)
             
             quantity = int(request.POST.get("quantity", 1))
             
             if quantity > item.stock:
                 messages.error(request, f"Only {item.stock} item(s) left in stock.")
-                return redirect('market:item_details', slug=product_id.slug)
+                return redirect('market:item_details', slug=item.slug)
             
             cart, _ = Cart.objects.get_or_create(user=request.user)
             cart_item, created = CartItem.objects.get_or_create(cart=cart, product=item)
@@ -97,6 +90,7 @@ def add_to_cart_view(request, product_id):
                 cart_item.quantity = quantity
             cart_item.save()
             messages.success(request, "Item added to cart successfully!")
+            Wishlist.objects.filter(user=request.user, product=item).delete()
         
             
             return redirect('market:item_details', slug=item.slug)
@@ -108,13 +102,16 @@ def add_to_cart_view(request, product_id):
 def cart_view(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
     items = cart.items.select_related('product')
+    for item in items:
+        item.subtotal = item.product.price * item.quantity
     total = sum(item.product.price * item.quantity for item in items)
-    return render(request, 'markets/cart.html', {'items': items, 'total': total})
+    return render(request, 'markets/cart.html', {'items': items, 'total': total, 'show_search': True})
 
 
 def remove_from_cart_view(request, product_id):
     cart = Cart.objects.get(user=request.user)
     CartItem.objects.filter(cart=cart, product_id=product_id).delete()
+    
     return redirect('market:cart_view')
 
 
@@ -152,12 +149,57 @@ def view_wishlist(request):
     else:
         return redirect('account:register')
 
-    return render(request, 'markets/wishlist.html', {'wishlists':wishlists})
+    return render(request, 'markets/wishlist.html', {'wishlists':wishlists, 'show_search': False})
 
 
-# def wishlist_count(request):
-#     if request.user.is_authenticated:
-#         count = Wishlist.objects.filter(user=request.user).count()
-#     else:
-#         count = 0
-#     return {'wishlist_count': count}
+
+def order_summary(request):
+    cart = Cart.objects.filter(user=request.user).first()
+    if not cart or not cart.items.exists():
+        messages.error(request, "Your cart is empty.")
+        return redirect('market:product_list')
+
+    items = cart.items.select_related('product')  # optimize DB query
+
+    subtotal = Decimal(0)
+    for item in items:
+        if item.product and item.product.price:
+            item.subtotal = item.product.price * item.quantity
+            subtotal += item.product.price * item.quantity
+
+    shipping = Decimal('5.00')
+    total = subtotal + shipping
+
+    return render(request, 'markets/summary.html', {
+        'items': items,
+        'subtotal': subtotal,
+        'shipping': shipping,
+        'total': total,
+    })
+
+
+
+
+def checkout(request):
+    cart = Cart.objects.filter(user=request.user).first()
+    if not cart or not cart.items.exists():
+        messages.error(request, "No items in cart.")
+        return redirect('market:listings')
+
+    total = sum(item.product.price * item.quantity for item in cart.items.all())
+    order = Order.objects.create(user=request.user, total_price=total)
+
+    for item in cart.items.all():
+        OrderItem.objects.create(
+            order=order,
+            product=item.product,
+            quantity=item.quantity,
+            price=item.product.price,
+        )
+        item.product.stock -= item.quantity
+        item.product.save()
+
+    cart.items.all().delete()
+    # messages.success(request, "Order placed successfully!")
+    return render(request, "markets/checkout.html", {'order_id': order.id})
+
