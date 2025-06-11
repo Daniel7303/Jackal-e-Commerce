@@ -69,33 +69,37 @@ def item_details(request, slug):
 
 def add_to_cart_view(request, product_id):
     if request.method == "POST":
-        item = Product.objects.get(id=product_id)
-            
+        item = get_object_or_404(Product, id=product_id)
+
         if request.user.is_authenticated:
             if item.stock == 0:
                 messages.error(request, "This item is currently out of stock.")
                 return redirect('market:item_details', slug=item.slug)
-            
+
             quantity = int(request.POST.get("quantity", 1))
-            
+
             if quantity > item.stock:
                 messages.error(request, f"Only {item.stock} item(s) left in stock.")
                 return redirect('market:item_details', slug=item.slug)
-            
+
             cart, _ = Cart.objects.get_or_create(user=request.user)
-            cart_item, created = CartItem.objects.get_or_create(cart=cart, product=item)
-            if not created:
-                cart_item.quantity += quantity
-            else:
-                cart_item.quantity = quantity
-            cart_item.save()
+
+            # Check if item already exists in cart
+            existing_cart_item = CartItem.objects.filter(cart=cart, product=item).first()
+            if existing_cart_item:
+                messages.info(request, "Item already in cart.")
+                return redirect('market:item_details', slug=item.slug)
+
+            # Add item to cart
+            cart_item = CartItem.objects.create(cart=cart, product=item, quantity=quantity)
             messages.success(request, "Item added to cart successfully!")
+
+            # Remove from wishlist if it exists
             Wishlist.objects.filter(user=request.user, product=item).delete()
-        
-            
+
             return redirect('market:item_details', slug=item.slug)
         else:
-            messages.success(request, "Please Register/Login to add item to Cart!")
+            messages.info(request, "Please Register/Login to add item to Cart!")
             return redirect('market:item_details', slug=item.slug)
     
 
@@ -176,6 +180,7 @@ def order_summary(request):
         'shipping': shipping,
         'total': total,
     })
+    
 
 
 
@@ -219,3 +224,8 @@ def checkout(request):
         'total': total,
     })
 
+
+@login_required
+def order_history(request):
+    orders = Order.objects.filter(user=request.user).prefetch_related('items__product').order_by('-created_at')
+    return render(request, 'markets/order_history.html', {'orders': orders})

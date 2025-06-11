@@ -124,6 +124,11 @@
                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >Dashboard</a
                 >
+                <a
+                  href="{% url 'market:order_history' %}"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >Order History</a
+                >
                 {% if user.is_superuser %}
                 <a
                   href="{% url 'market:create_listings' %}"
