@@ -182,14 +182,24 @@ def order_summary(request):
 
 def checkout(request):
     cart = Cart.objects.filter(user=request.user).first()
-    if not cart or not cart.items.exists():
-        messages.error(request, "No items in cart.")
-        return redirect('market:listings')
 
-    total = sum(item.product.price * item.quantity for item in cart.items.all())
+    # if not cart or not cart.items.exists():
+    #     messages.error(request, "No items in cart.")
+    #     return redirect('market:listings')
+
+    items = cart.items.select_related('product')
+
+    subtotal = Decimal(0)
+    for item in items:
+        item.subtotal = item.product.price * item.quantity
+        subtotal += item.subtotal
+
+    shipping = Decimal('5.00')
+    total = subtotal + shipping
+
     order = Order.objects.create(user=request.user, total_price=total)
 
-    for item in cart.items.all():
+    for item in items:
         OrderItem.objects.create(
             order=order,
             product=item.product,
@@ -200,6 +210,12 @@ def checkout(request):
         item.product.save()
 
     cart.items.all().delete()
-    # messages.success(request, "Order placed successfully!")
-    return render(request, "markets/checkout.html", {'order_id': order.id})
+
+    return render(request, 'markets/checkout.html', {
+        'order_id': order.id,
+        'items': items,
+        'subtotal': subtotal,
+        'shipping': shipping,
+        'total': total,
+    })
 
